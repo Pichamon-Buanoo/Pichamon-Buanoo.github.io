@@ -12,8 +12,6 @@ dip_dir = df["dip direction"].values
 dip = df["dip angle"].values
 
 def orientation_to_vector(dd, dip):
-    # convert dip direction and dip to 3D vector
-    # ตอนนี้ dd และ dip คือค่าตัวเลข (scalar) เดี่ยวๆ
     dd_rad = np.radians(dd)
     dip_rad = np.radians(dip)
     
