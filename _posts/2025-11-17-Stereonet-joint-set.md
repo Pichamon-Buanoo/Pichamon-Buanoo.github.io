@@ -4,7 +4,6 @@ title: "create joint dataset on stereonet"
 date: 2025-11-16
 categories: [Education, Geology]
 tags: [stereonet,python]
-image: /_posts/stereonet_output.png
 ---
 
 ### Introduction
@@ -14,4 +13,5 @@ Therefore, I aimed to explore Python-based methods to automatically classify joi
 ### Download
 - [Download Python script](https://Pichamon-Buanoo.github.io/files/kmean.py)
 - [Download data](https://Pichamon-Buanoo.github.io/files/joint.csv)
-
+### Result
+- [Stereonet](/_posts/stereonet_output.png)
