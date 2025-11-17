@@ -13,13 +13,4 @@ Therefore, I aimed to explore Python-based methods to automatically classify joi
 ### Download
 - [Download Python script](https://Pichamon-Buanoo.github.io/files/kmean.py)
 - [Download data](https://Pichamon-Buanoo.github.io/files/joint.csv)
-![result](stereonet_output.png)
-
-```python
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import mplstereonet
-from sklearn.cluster import KMeans
-
-df = pd.read_csv("joint.csv")
+![result](/_post/stereonet_output.png)
