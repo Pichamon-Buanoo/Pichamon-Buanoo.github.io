@@ -14,4 +14,4 @@ Therefore, I aimed to explore Python-based methods to automatically classify joi
 - [Download Python script](https://Pichamon-Buanoo.github.io/files/kmean.py)
 - [Download data](https://Pichamon-Buanoo.github.io/files/joint.csv)
 ### Result
-- [Stereonet](https://Pichamon.github.io/_posts/stereonet_output.png)
+- [Stereonet](https://Pichamon.github.io/images/stereonet_output.png)
