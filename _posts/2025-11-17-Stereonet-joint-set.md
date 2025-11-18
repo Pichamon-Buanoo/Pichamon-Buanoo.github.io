@@ -18,7 +18,7 @@ Therefore, I aimed to explore Python-based methods to automatically classify joi
 
 ### Python code
 ```python
- import numpy as np
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import mplstereonet
@@ -66,4 +66,5 @@ plt.savefig('stereonet_output.png', dpi=300)
 
 for i in range(k):
     print(f"\n-------- Joint Set {i} --------")
-    print(df[df["joint_set"] == i])```
+    print(df[df["joint_set"] == i])
+```
