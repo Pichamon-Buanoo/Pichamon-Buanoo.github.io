@@ -13,8 +13,8 @@ Therefore, I aimed to explore Python-based methods to automatically classify joi
 - [Stereonet](/images/stereonet_output.png)<img src='/images/stereonet_output.png'>
 
 ### Download
-- [Download Python script](https://Pichamon-Buanoo.github.io/files/kmean.py)
-- [Download data](https://Pichamon-Buanoo.github.io/files/joint.csv)
+- [Download Python script](/files/kmean.py)
+- [Download data](/files/joint.csv)
 
 ### Python code
 ```python
