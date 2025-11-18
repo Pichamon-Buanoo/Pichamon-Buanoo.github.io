@@ -8,9 +8,7 @@ tags: [stereonet,python]
 
 ### Introduction
 Stereographic projection is a widely used tool in various geological applications, including structural geology, failure analysis, and borehole interpretation. When working with a large number of dip-direction and dip-angle measurements from a study area, grouping the data into meaningful joint sets often requires mathematical computation or manual classification by the interpreter.
-
-Therefore, I aimed to explore Python-based methods to automatically classify joint sets by importing data from a .csv file and generating stereonet visualizations with color-coded clusters.
-- [Stereonet](/images/stereonet_output.png)<img src='/images/stereonet_output.png'>
+Therefore, I aimed to explore Python-based methods to automatically classify joint sets by importing data from a .csv file and generating stereonet visualizations with color-coded clusters.<img src='/images/stereonet_output.png'>
 
 ### Download
 - [Download Python script](/files/kmean.py)
