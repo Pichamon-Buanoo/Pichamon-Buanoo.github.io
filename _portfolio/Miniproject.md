@@ -1,6 +1,5 @@
 ---
 title: "How To Cluster Joint Sets: A K-Means Streamlit Approach"
-excerpt: "<img src='/images/k_means_stereonet_report.png'>"
 collection: portfolio
 ---
 
@@ -28,7 +27,7 @@ Export 2 (Data): Allows exporting the original data with the new Joint Set label
 
 ### Objective
 
-The primary objective is to aid in the grouping of joint or fracture data through computational analysis. This approach prevents errors arising from manual polygon picking and significantly reduces processing time. The resulting classified joint set file (.csv) can then be seamlessly used as input for subsequent stereonet plotting or analysis applications.
+The primary objective is to aid in the grouping of joint or fracture data through computational analysis. This approach prevents errors arising from manual polygon picking and significantly reduces processing time. The resulting classified joint set file (.csv) can then be seamlessly used as input for subsequent stereonet plotting or analysis applications."<img src='/images/k_means_stereonet_report.png'>
 
 ### Download
 - [Download Python script](/files/kmean4.py)
@@ -219,6 +218,6 @@ if __name__ == "__main__":
     main_app()
 ```
 ### Streamlit run
-<img src='/images/web1.png'>
-<img src='/images/web2.png'>
-<img src='/images/web3.png'>
+Select data file<img src='/images/web1.png'>
+Plot stereonet<img src='/images/web2.png'>
+Export stereonet & joint set data<img src='/images/web3.png'>
