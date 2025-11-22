@@ -1,6 +1,6 @@
 ---
 title: "How To Cluster Joint Sets: A K-Means Streamlit Approach"
-excerpt: "Exemple <br/><img src='/images/k_means_stereonet_report.png'>"
+excerpt: "<img src='/images/k_means_stereonet_report.png'>"
 collection: portfolio
 ---
 
