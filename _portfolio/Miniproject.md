@@ -27,7 +27,7 @@ Export 2 (Data): Allows exporting the original data with the new Joint Set label
 
 ### Objective
 
-The primary objective is to aid in the grouping of joint or fracture data through computational analysis. This approach prevents errors arising from manual polygon picking and significantly reduces processing time. The resulting classified joint set file (.csv) can then be seamlessly used as input for subsequent stereonet plotting or analysis applications."<img src='/images/k_means_stereonet_report.png'>
+The primary objective is to aid in the grouping of joint or fracture data through computational analysis. This approach prevents errors arising from manual polygon picking and significantly reduces processing time. The resulting classified joint set file (.csv) can then be seamlessly used as input for subsequent stereonet plotting or analysis applications.<img src='/images/k_means_stereonet_report.png'>
 
 ### Download
 - [Download Python script](/files/kmean4.py)
