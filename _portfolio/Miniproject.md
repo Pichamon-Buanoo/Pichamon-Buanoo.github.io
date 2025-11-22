@@ -32,7 +32,8 @@ The primary objective is to aid in the grouping of joint or fracture data throug
 
 ### Download
 - [Download Python script](/files/kmean4.py)
-- [Download data](/files/joint.csv)(/files/joint2.csv)
+- [Download Data Example 1](/files/joint.csv)
+- [Download Data Example 2](/files/joint2.csv)
 
 ### Python code
 ```python
@@ -217,3 +218,7 @@ def main_app():
 if __name__ == "__main__":
     main_app()
 ```
+### Streamlit run
+<img src='/images/web1.png'>
+<img src='/images/web2.png'>
+<img src='/images/web3.png'>
