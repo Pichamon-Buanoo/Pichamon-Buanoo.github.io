@@ -1,0 +1,506 @@
+---
+title: "Weather warning"
+excerpt: #
+collection: portfolio
+---
+
+Data Visualization and API Integration with the Thai Meteorological Department (TMD)
+
+This project focused on developing Python code to retrieve diverse data from the Thai Meteorological Department (TMD) API, demonstrating various visualization and data presentation techniques. All code was developed and refined using the Gemini AI Assistant.
+
+---
+
+## Sub-Task 1: Geophysical Data Retrieval (TMD Data - API No. 15)
+
+| Detail | Description |
+| :--- | :--- |
+| **Description:** | Fetched daily seismic event data and generated an interactive map to display the location and magnitude of each event. |
+| **File:** | `Dailyearthquakes.py` |
+| **Key Technique:** | Utilized **MarkerCluster** in Folium for grouping earthquake points and a **ColorMap** to visually represent the earthquake magnitude (severity). |
+
+#### Python Code Snippet:
+```python
+import requests
+import pandas as pd
+import xml.etree.ElementTree as ET
+import webbrowser
+import os
+import folium
+import branca.colormap as cm
+from folium.plugins import MarkerCluster
+
+def get_xml_text(element, tag):
+    """
+    Safely retrieves the text content of a sub-element within an XML element.
+    Returns None if the sub-element does not exist.
+    """
+    node = element.find(tag)
+    return node.text if node is not None else None
+
+
+def get_seismic_data():
+    """
+    Fetches daily seismic event data from the TMD API and converts it into a pandas DataFrame.
+    """
+    url = "http://data.tmd.go.th/api/DailySeismicEvent/v1/?uid=api&ukey=api12345"
+    records = []
+
+    try:
+        # 1. Fetch data
+        print("Fetching seismic data from TMD...")
+        response = requests.get(url, timeout=15)
+        response.raise_for_status() # Raise exception for bad status codes (4xx or 5xx)
+        
+        # 2. Parse XML
+        root = ET.fromstring(response.content)
+        
+        # 3. Extract records
+        for event in root.findall('DailyEarthquakes'):
+            try:
+                lat = get_xml_text(event, 'Latitude')
+                lon = get_xml_text(event, 'Longitude')
+                mag = get_xml_text(event, 'Magnitude')
+                time_val = get_xml_text(event, 'DateTimeThai')
+                region = get_xml_text(event, 'OriginThai')
+
+                if lat and lon and mag:
+                    records.append({
+                        'lat': float(lat),
+                        'lon': float(lon),
+                        'mag': float(mag),
+                        'depth': get_xml_text(event, 'Depth') or "0",
+                        'time': time_val or "Unknown Time",
+                        'region': region or "Unknown Location"
+                    })
+            except (ValueError, TypeError) as ve: 
+                # print(f"Skipping record due to invalid value format: {ve}")
+                continue  
+
+        return pd.DataFrame(records)
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching data (Check URL/Network): {e}")
+        return pd.DataFrame()
+    except ET.ParseError:
+        print("Error parsing XML content. The received data may not be valid XML.")
+        return pd.DataFrame()
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return pd.DataFrame()
+
+
+def create_seismic_map(df):
+    """
+    Creates an interactive Folium map showing earthquake locations with a MarkerCluster.
+    """
+    output_file = "seismic_map_clustered.html"
+    
+    if df.empty:
+        print("No seismic data found to plot.")
+        return
+
+    print(f"Plotting {len(df)} seismic events...")
+    m = folium.Map(
+        location=[13.0, 101.0],
+        zoom_start=5,  
+        tiles='CartoDB dark_matter',
+        attr='Seismic Data © TMD'
+    )
+    
+    style_content = """
+    <style>
+        /* Force Legend Text to White with Black Outline */
+        .legend, .legend text, .tick text, .caption {
+            fill: #ffffff !important;       /* Changes SVG text color */
+            color: #ffffff !important;      /* Changes HTML text color */
+            font-weight: bold !important;
+            font-size: 14px !important;
+            
+            /* Sharp Black Outline */
+            text-shadow: 
+                -1px -1px 0 #000, 
+                 1px -1px 0 #000,
+                -1px  1px 0 #000,
+                 1px  1px 0 #000;
+        }
+        
+        /* Make the legend background slightly semi-transparent dark */
+        .legend {
+            background-color: rgba(0, 0, 0, 0.3); 
+            padding: 5px;
+            border-radius: 5px;
+        }
+    </style>
+    """
+    m.get_root().html.add_child(folium.Element(style_content))
+
+    # Color Scale (Green -> Yellow -> Red)
+    colormap = cm.LinearColormap(
+        colors=['#00ff00', '#ffff00', '#ff0000'],
+        vmin=2.0, vmax=6.0,
+        caption='Magnitude (Richter)'
+    )
+    colormap.add_to(m)
+
+    # Marker Cluster
+    cluster_group = MarkerCluster(name="Seismic Clusters").add_to(m)
+
+
+    for _, row in df.iterrows():
+        mag = row['mag']
+        color = colormap(mag)
+        
+
+        popup_html = f"""
+        <div style="font-family: Arial; width: 220px; color: black;">
+            <h4 style="margin: 0 0 5px 0; color: {color}; text-shadow: 1px 1px 0 #fff;">Mag: {mag}</h4>
+            <b>Loc:</b> {row['region']}<br>
+            <b>Time:</b> {row['time']}<br>
+            <b>Depth:</b> {row['depth']} km<br>
+            <b>Coords:</b> {row['lat']}, {row['lon']}
+        </div>
+        """
+
+        folium.CircleMarker(
+            location=[row['lat'], row['lon']],
+            radius=4 + (mag * 1.5), 
+            color=color,
+            fill=True,
+            fill_color=color,
+            fill_opacity=0.8,
+            weight=1,
+            popup=folium.Popup(popup_html, max_width=300),
+            tooltip=f"Mag {mag}: {row['region']}"
+        ).add_to(cluster_group)
+
+    m.save(output_file)
+    print(f"\nSuccess! Map saved as '{output_file}'")
+    open_in_browser(output_file)
+
+def open_in_browser(filename):
+    """
+    Opens the generated HTML map file in the default web browser.
+    """
+    try:
+        path = os.path.abspath(filename)
+        webbrowser.open(f'file://{path}')
+    except Exception as e:
+        print(f"Could not open map in browser: {e}")
+
+if __name__ == "__main__":
+    df = get_seismic_data()
+    create_seismic_map(df)```
+
+### Map
+
+
+---
+## Sub-Task 2: 7-Day Weather Forecast Mapping
+
+| Detail | Description |
+| :--- | :--- |
+| **Description:** | Fetched 7-day weather forecast data and created a Choropleth Map to show the distribution of maximum temperatures across all provinces of Thailand. |
+| **File:** | `No.8.py` |
+| **Key Technique:** | Inverse Masking (using Shapely to hide the base map features outside the boundaries of Thailand) and GeoPandas for merging the API data with GeoJSON provincial boundaries. |
+
+#### Python Code Snippet:
+```python
+import requests
+import geopandas as gpd
+import pandas as pd
+import folium
+import xml.etree.ElementTree as ET
+import branca.colormap as cm
+import webbrowser
+import os
+from shapely.geometry import box  # Required for creating the mask
+
+def get_xml_text(element, tag, default_val="N/A"):
+    """Safely retrieves the text content of a sub-element."""
+    node = element.find(tag)
+    return node.text.strip() if node is not None and node.text else default_val
+
+def get_weather_data_extended():
+    url = "https://data.tmd.go.th/api/WeatherForecast7Days/v2/?uid=api&ukey=api12345"
+    records = []
+    
+    try:
+        print("Fetching XML data...")
+        response = requests.get(url, timeout=15)
+        response.raise_for_status() 
+        root = ET.fromstring(response.content)
+        
+        for province in root.findall('./Provinces/Province'):
+            name_en = get_xml_text(province, 'ProvinceNameEnglish', default_val=None)
+            forecast = province.find('SevenDaysForecast')
+            
+            if name_en:
+                max_temp_str = get_xml_text(forecast, 'MaximumTemperature', default_val="0")
+                
+                try:
+                    max_temp = float(max_temp_str)
+                except ValueError:
+                    max_temp = 0.0
+
+                records.append({
+                    'province_en': name_en,
+                    'date': get_xml_text(forecast, 'ForecastDate'),
+                    'max_temp': max_temp,
+                    'min_temp': get_xml_text(forecast, 'MinimumTemperature'),
+                    'wind_speed': get_xml_text(forecast, 'WindSpeed'),
+                    'desc': get_xml_text(forecast, 'DescriptionEnglish')
+                })
+        
+        df = pd.DataFrame(records)
+        if not df.empty:
+            df['province_en'] = df['province_en'].replace({
+                'Bangkok': 'Bangkok Metropolis',
+                'Nakhon Ratchasima': 'Nakhon Ratchasima'
+            })
+        return df
+    except requests.exceptions.RequestException as e:
+        print(f"Network or API Error: {e}. Please check your internet connection or API URL/Key.")
+        return pd.DataFrame()
+    except Exception as e:
+        print(f"Parsing/Data Error: {e}")
+        return pd.DataFrame()
+
+def create_interactive_map(weather_df):
+    map_url = "https://raw.githubusercontent.com/cvibhagool/thailand-map/master/thailand-provinces.geojson"
+    output_file = "thailand_weather_cropped.html"
+    
+    if weather_df.empty:
+        print("No weather data found to plot.")
+        return
+
+    try:
+        print("Downloading map geometry and merging data...")
+        gdf = gpd.read_file(map_url)
+        merged = gdf.merge(weather_df, left_on='NAME_1', right_on='province_en', how='left')
+        merged['max_temp'] = merged['max_temp'].fillna(0)
+        
+        valid_temps = merged[merged['max_temp'] > 0]['max_temp']
+        if not valid_temps.empty:
+            min_scale = valid_temps.min()
+            max_scale = valid_temps.max()
+        else:
+            min_scale, max_scale = 20, 40
+
+        print(f"Color Scale: {min_scale}°C - {max_scale}°C")
+
+        esri_url = 'https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}'
+        esri_attr = 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+
+        m = folium.Map(
+            location=[13.0, 101.0], 
+            zoom_start=6, 
+            tiles=esri_url, 
+            attr=esri_attr
+        )
+        
+        print("Generating Inverse Mask to hide external base map...")
+        thailand_outline = gdf.dissolve().geometry[0]
+        
+        world_box = box(-180, -90, 180, 90)
+
+        mask_geom = world_box.difference(thailand_outline)
+
+        folium.GeoJson(
+            mask_geom,
+            style_function=lambda x: {
+                'fillColor': 'white', 
+                'color': 'white',  # Border color
+                'weight': 0,        # No border lines
+                'fillOpacity': 1.0  # Opaque white
+            },
+            name="Inverse Mask"
+        ).add_to(m)
+
+        colormap = cm.LinearColormap(
+            # Blue (Cool) -> Red (Hot)
+            colors=['#4575b4', '#91bfdb', '#fee090', '#fc8d59', '#d73027'],
+            vmin=min_scale,
+            vmax=max_scale,
+            caption='Max Temperature (°C)'
+        )
+        colormap.add_to(m)
+
+        # Style function สำหรับ Choropleth Layer
+        def style_fn(feature):
+            temp = feature['properties'].get('max_temp', 0)
+            return {
+                'fillColor': colormap(temp) if temp > 0 else '#d9d9d9',
+                'color': 'black',
+                'weight': 0.5,
+                'fillOpacity': 0.6
+            }
+
+        folium.GeoJson(
+            merged,
+            name='Weather Data',
+            style_function=style_fn,
+            tooltip=folium.GeoJsonTooltip(fields=['NAME_1'], aliases=['Province:']),
+            popup=folium.GeoJsonPopup(
+                fields=['NAME_1', 'date', 'max_temp', 'min_temp', 'wind_speed', 'desc'],
+                aliases=['Province', 'Date', 'Max Temp (°C)', 'Min Temp (°C)', 'Wind', 'Weather'],
+                localize=True
+            )
+        ).add_to(m)
+
+        m.save(output_file)
+        print(f"Success! Map saved as '{output_file}'")
+        
+        open_in_browser(output_file)
+
+    except Exception as e:
+        print(f"Mapping Error: {e}")
+
+def open_in_browser(filename):
+    try:
+        file_path = os.path.abspath(filename)
+        url = f'file://{file_path}'
+        webbrowser.open(url)
+    except Exception as e:
+        print(f"Could not open browser automatically: {e}")
+
+if __name__ == "__main__":
+    df = get_weather_data_extended()
+    create_interactive_map(df)```
+
+### Map
+
+---
+## Sub-Task 3: Weather Warning News
+
+| Detail | Description |
+| :--- | :--- |
+| **Description:** | Retrieved text-based weather warning news and presented the information in a structured format suitable for the console. |
+| **File:** | `weather_warning_news.py` |
+| **Key Technique:** | Structured Output using Pandas DataFrames for summary tables and Text Wrapping for clean, readable display of the full, detailed warning text. |
+
+### Python Code Snippet:
+```python
+import requests
+import pandas as pd
+import xml.etree.ElementTree as ET
+import textwrap # Used for formatting long text
+
+# --- 1. Define API Key and URL ---
+# Use the same key you used in the original code (placeholder if not using a real key)
+API_UID = "api" 
+API_UKEY = "api12345"
+# API No. 10: Weather Warning News
+URL = f"https://data.tmd.go.th/api/WeatherWarningNews/v1/?uid={API_UID}&ukey={API_UKEY}"
+
+def get_xml_text(element, tag, default_val="N/A"):
+    """Safely retrieves the text content of a sub-element, stripping whitespace."""
+    if element is None:
+        return default_val
+        
+    node = element.find(tag)
+    # Strip whitespace to ensure clean text retrieval
+    return node.text.strip() if node is not None and node.text else default_val
+
+def get_warning_news():
+    """
+    Fetches weather warning news from TMD API (No. 10) and extracts key details.
+    Returns a pandas DataFrame of the warnings.
+    """
+    records = []
+    
+    try:
+        print(f"--- Fetching Weather Warning News (API No. 10) from {URL} ---")
+        response = requests.get(URL, timeout=15)
+        # Raise an exception for bad status codes (4xx or 5xx)
+        response.raise_for_status() 
+        root = ET.fromstring(response.content)
+        
+        # Check if any warning data exists
+        warnings = root.findall('Warning')
+        if not warnings:
+            print("No active warning news found.")
+            return pd.DataFrame()
+
+        for warning in warnings:
+            records.append({
+                'Issue_No': get_xml_text(warning, 'IssueNo'),
+                'Announce_Date': get_xml_text(warning, 'AnnounceDate'),
+                'Effect_Start': get_xml_text(warning, 'EffectStartDate'),
+                'Effect_End': get_xml_text(warning, 'EffectEndDate'),
+                'Title_Thai': get_xml_text(warning, 'TitleThai'),
+                'Headline_Thai': get_xml_text(warning, 'HeadlineThai'),
+                'Description_Thai': get_xml_text(warning, 'DescriptionThai'),
+                'Web_URL_Thai': get_xml_text(warning, 'WebUrlThai'),
+            })
+        
+        # Convert to DataFrame and sort by the latest announcement date
+        df = pd.DataFrame(records)
+        df['Announce_Date'] = pd.to_datetime(df['Announce_Date'], errors='coerce')
+        df = df.sort_values(by='Announce_Date', ascending=False).reset_index(drop=True)
+        
+        return df
+    
+    except requests.exceptions.RequestException as e:
+        print(f"Network or API Error: {e}. Check URL/Key/Internet connection.")
+        return pd.DataFrame()
+    except ET.ParseError:
+        print("XML Parsing Error: The response is not a valid XML format.")
+        return pd.DataFrame()
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+        return pd.DataFrame()
+
+def display_warning_news(df):
+    """
+    Displays the fetched news data, showing a summary table and the full text of the latest warning.
+    """
+    if df.empty:
+        return
+
+    print("\n" + "="*80)
+    print("📢 Summary of All Weather Warning News (Sorted by Latest)")
+    print("="*80)
+    
+    # --- 1. Display Summary Table (Analogous to Plotting) ---
+    summary_df = df[['Issue_No', 'Announce_Date', 'Title_Thai', 'Headline_Thai', 'Effect_Start', 'Effect_End']].copy()
+    
+    # Trim columns for better console display
+    summary_df['Title_Thai'] = summary_df['Title_Thai'].str.slice(0, 50) + '...'
+    summary_df['Headline_Thai'] = summary_df['Headline_Thai'].str.slice(0, 70) + '...'
+    
+    print("\n--- Warning News Summary Table ---\n")
+    print(summary_df.to_string(index=False))
+    
+    # --- 2. Display Latest News Details (Analogous to Colorbar/Values) ---
+    latest_news = df.iloc[0]
+    
+    print("\n" + "="*80)
+    print(f"🚨 Details of the Latest Issue (Issue No: {latest_news['Issue_No']})")
+    print("="*80)
+    
+    # Function to wrap long text for console readability
+    def wrap_text(text, width=78):
+        return "\n".join(textwrap.wrap(text, width=width))
+
+    print(f"Announcement Date: {latest_news['Announce_Date']}")
+    print(f"Effect Period: {latest_news['Effect_Start']} to {latest_news['Effect_End']}")
+    print("-" * 50)
+    print("Warning Title:")
+    print(wrap_text(latest_news['Title_Thai']))
+    print("\nHeadline:")
+    print(wrap_text(latest_news['Headline_Thai']))
+    print("\nFull Description:")
+    print(wrap_text(latest_news['Description_Thai']))
+    print("-" * 50)
+    print(f"Full Document URL: {latest_news['Web_URL_Thai']}")
+    print("\n")
+
+
+if __name__ == "__main__":
+    df_warnings = get_warning_news()
+    if not df_warnings.empty:
+        display_warning_news(df_warnings)
+    else:
+        print("Finished process, but no data was displayed.")```
+
+### result
