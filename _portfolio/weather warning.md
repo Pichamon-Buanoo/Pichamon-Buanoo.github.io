@@ -15,7 +15,7 @@ This project focused on developing Python code to retrieve diverse data from the
 | Detail | Description |
 | :--- | :--- |
 | **Description:** | Fetched daily seismic event data and generated an interactive map to display the location and magnitude of each event. |
-| **File:** | `Dailyearthquakes.py` |
+| **File:** | [Dailyearthquakes](/files/Dailyearthquakes.py) |
 | **Key Technique:** | Utilized **MarkerCluster** in Folium for grouping earthquake points and a **ColorMap** to visually represent the earthquake magnitude (severity). |
 
 #### Python Code Snippet:
@@ -189,18 +189,20 @@ def open_in_browser(filename):
 
 if __name__ == "__main__":
     df = get_seismic_data()
-    create_seismic_map(df)```
+    create_seismic_map(df)
+```
 
 ### Map
-
+<img src='/images/TMD.png'>
 
 ---
+
 ## Sub-Task 2: 7-Day Weather Forecast Mapping
 
 | Detail | Description |
 | :--- | :--- |
 | **Description:** | Fetched 7-day weather forecast data and created a Choropleth Map to show the distribution of maximum temperatures across all provinces of Thailand. |
-| **File:** | `No.8.py` |
+| **File:** | [No.8.py](/files/No.8.py) |
 | **Key Technique:** | Inverse Masking (using Shapely to hide the base map features outside the boundaries of Thailand) and GeoPandas for merging the API data with GeoJSON provincial boundaries. |
 
 #### Python Code Snippet:
@@ -365,17 +367,20 @@ def open_in_browser(filename):
 
 if __name__ == "__main__":
     df = get_weather_data_extended()
-    create_interactive_map(df)```
+    create_interactive_map(df)
+```
 
 ### Map
+<img src='/images/No.8.png'>
 
 ---
+
 ## Sub-Task 3: Weather Warning News
 
 | Detail | Description |
 | :--- | :--- |
 | **Description:** | Retrieved text-based weather warning news and presented the information in a structured format suitable for the console. |
-| **File:** | `weather_warning_news.py` |
+| **File:** | [weather_warning_news.py](/files/weather_warning_new.py) |
 | **Key Technique:** | Structured Output using Pandas DataFrames for summary tables and Text Wrapping for clean, readable display of the full, detailed warning text. |
 
 ### Python Code Snippet:
@@ -501,6 +506,8 @@ if __name__ == "__main__":
     if not df_warnings.empty:
         display_warning_news(df_warnings)
     else:
-        print("Finished process, but no data was displayed.")```
+        print("Finished process, but no data was displayed.")
+```
 
 ### result
+<img src='/images/No.10.png'>
