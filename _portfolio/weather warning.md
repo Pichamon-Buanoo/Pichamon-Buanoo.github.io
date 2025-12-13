@@ -15,7 +15,7 @@ This project focused on developing Python code to retrieve diverse data from the
 | Detail | Description |
 | :--- | :--- |
 | **Description:** | Fetched daily seismic event data and generated an interactive map to display the location and magnitude of each event. |
-| **File:** | [Dailyearthquakes](/files/Dailyearthquakes.py) |
+| **File:** | [DailyEarthquakes](/files/DailyEarthquakes.py) |
 | **Key Technique:** | Utilized **MarkerCluster** in Folium for grouping earthquake points and a **ColorMap** to visually represent the earthquake magnitude (severity). |
 
 #### Python Code Snippet:
